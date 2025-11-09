@@ -11,6 +11,18 @@ independently, experiment modifying the scripts to their needs, and study the
 properties from the systems by adding necessary outputs in scripts and/or
 writing post processing scripts for the output data.
 
+## Prerequisites
+
+The projects here required extra packages to be activated in your `LAMMPS`:
+
+- `MANYBODY`
+- `MEAM`
+- `REAXFF`
+- `QEQ`
+- `EXTRA-FIX`
+
+Please check [Available optional packages](https://docs.lammps.org/Packages.html) and [Build packages](https://docs.lammps.org/Build_package.html) to see instructions to activate these packages if your `LAMMPS` runtime has not been compiled with them on.
+
 ## Example projects
 
 ### WS2_WSe2
