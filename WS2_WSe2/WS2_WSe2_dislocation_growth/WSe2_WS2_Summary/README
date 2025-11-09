@@ -1,0 +1,6 @@
+**Project Introduction:**
+
+This project involves creating and simulating a WS2-WSe2 heterostructure with a 6|8 dislocation at the interface for computational materials study, with the aim of forming a semiconductor junction where sulfur atoms from WS2 diffuse into WSe2 and replace selenium atoms to create a p-n junction. I
+I'm building an atomistic model where the dislocation is introduced by applying a Burgers vector shift between the WS2 and WSe2 layers, creating the defect pattern. 
+The process includes: generating the dislocation structure using Python/ASE codes, setting up LAMMPS simulations with appropriate interatomic potentials, and analyzing the resulting strain fields and atomic configurations. 
+The provided materials include the structure data files, self-generated potential parameters, LAMMPS input scripts for energy minimization and property calculation, and Python codes for structure generation, visualization, and analysis.

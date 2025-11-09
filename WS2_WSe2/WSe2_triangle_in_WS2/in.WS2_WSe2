@@ -1,0 +1,60 @@
+# ----------------- Init Section -----------------
+
+units metal
+atom_style atomic
+pair_style sw 
+
+variable material string WS2_WSe2 # Specify elements
+variable element1 string W
+variable element2 string S
+variable element3 string Se
+#variable element1 string Mo
+#variable element2 string S
+#variable element3 string W
+#variable element4 string S
+variable tmp equal 4.5
+variable xyscale equal 100
+read_data ./WS2_WSe2.data
+# ----------------- Settings Section -----------------
+
+pair_coeff * * ./tmd.sw ${element1} ${element2} ${element3} #  ${element4}
+
+# ----------------- Run Section -----------------
+
+# The lines above define the system you want to simulate.
+# What you do next is up to you.
+# Typically a user would minimize and equilibrate
+# the system using commands similar to the following:
+#  -- declare time step for normal MD --
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+compute virial all stress/atom NULL
+
+reset_timestep 0
+timestep 0.001 #1 Femtosecond = 0.001 Picosecond
+
+neighbor 1.0 bin
+#neigh_modify delay 0 every 1 check yes #page 50000 one 5000 
+neigh_modify once yes
+
+#fix fShakeWS2 gWS2 shake 0.0001 10 100 b 1 a 1
+fix 	 1 all box/relax x 0.0 y 0.0
+minimize 1.0e-9 1.0e-8 1000000 10000000
+write_data ${material}_${xyscale}_minimize.data
+neighbor 2.0 bin 
+thermo 100
+thermo_style custom press pe temp
+thermo_modify lost ignore flush yes
+reset_timestep 0
+unfix 1
+velocity all create ${tmp} 12345 mom yes rot yes
+fix      1 all npt temp ${tmp} ${tmp} $(1*dt) iso 0.0 0.0 20
+variable natoms equal "count(all)"
+variable ecoh equal "c_pe/v_natoms"
+variable emin equal pe+f_1/atoms
+thermo 100
+thermo_style custom step cpu cpuremain press pe v_ecoh f_1 v_emin temp
+dump 1 all custom 100 dump.${material}_${xyscale}.relax id type element x y z #c_peratom c_virial[1] c_virial[2] c_virial[3]
+dump_modify 1 element ${element1} ${element2} ${element3} #${element4}
+minimize 1.0e-9 1.0e-5 1000000 10000000
+run 10000

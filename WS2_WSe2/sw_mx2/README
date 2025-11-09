@@ -1,0 +1,9 @@
+# by Jin-Wu Jiang, jwjiang5918@hotmail.com; jiangjinwu@shu.edu.cn
+
+(1). This folder contains files for LAMMPS to run MD simulations for the MoS2/WSe2 lateral heterostructure.
+(2). Note that, one MUST make a revision for the pair_sw.cpp source code in LAMMPS.
+(3). See the manuscript for more details: ``Misfit strain induced buckling for transition-metal dichalcogenide lateral heterostructures: a molecular dynamics study"
+
+in.tension: LAMMPS input script.
+lammps.dat: structure of the lateral heterostructure.
+tmd.sw: Stillinger-Weber potential file for LAMMPS, applicable for MX2 compounds with M=Mo, W; X=S, Se, Te.

@@ -1,0 +1,45 @@
+units metal
+dimension 3
+atom_style atomic
+
+boundary p p p
+variable latparam equal 3.8034
+variable material string Re # Specify elements
+variable tmp equal 298
+variable xyscale equal 100
+variable phase string hcp
+
+lattice ${phase} ${latparam}
+region whole block 0 ${xyscale} 0 ${xyscale} 0 1
+create_box 1 whole
+create_atoms 1 region whole
+pair_style eam/alloy
+pair_coeff * * ./WRe.eam.alloy ${material}
+write_data data.${material}_${phase}_${xyscale}
+
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+compute virial all stress/atom NULL
+compute p all reduce sum c_virial[1] c_virial[2] c_virial[3]
+variable natoms equal "count(all)"
+variable ecoh equal "c_pe/v_natoms"
+
+timestep 0.001
+velocity all create ${tmp} 12345 mom yes rot no
+minimize 1.0e-9 1.0e-5 1000000 10000000
+fix 	 1 all nvt temp ${tmp} ${tmp} $(1*dt)
+neighbor 2.0 bin 
+thermo 100
+thermo_style custom press pe temp
+thermo_modify lost ignore flush yes
+
+run 1000
+
+reset_timestep 0
+unfix 1
+fix  1 all box/relax aniso 0.0 vmax 0.001 nreset 100
+variable emin equal pe+f_1/atoms
+thermo 1000
+thermo_style custom step press pe v_ecoh f_1 v_emin temp
+dump 1 all custom 250 dump.${material}_${phase}_${xyscale}.relax id x y z c_peratom c_virial[1] c_virial[2] c_virial[3]
+minimize 1.0e-9 1.0e-5 1000000 10000000

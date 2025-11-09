@@ -1,0 +1,47 @@
+units metal
+dimension 3
+atom_style atomic
+boundary p p p
+variable tmp equal 298
+variable facet equal 332
+variable phase string fcc
+variable num_atoms equal 30163
+variable system string PtCo
+read_data ./${system}_${facet}_${phase}_${num_atoms}_temp.data
+variable material1 string Pt
+variable material2 string Co
+variable fM1 equal 50
+variable fM2 equal 50
+set type 1 type/fraction 2 $(v_fM2/100) 12345
+group g${material1} type 1
+group g${material2} type 2
+pair_style meam/c
+pair_coeff * * ../../library.meam ${material1} ${material2} ../../Pt-Co.meam ${material1} ${material2}
+write_data data.${system}_${facet}_${phase}_${num_atoms}
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+compute virial all stress/atom NULL
+compute p all reduce sum c_virial[1] c_virial[2] c_virial[3]
+variable natoms equal "count(all)"
+variable ecoh equal "c_pe/v_natoms"
+
+timestep 0.0001
+velocity all create ${tmp} 12345 mom yes rot no
+minimize 1.0e-9 1.0e-5 1000000 10000000
+fix 	 1 all nvt temp ${tmp} ${tmp} $(1*dt)
+neighbor 2.0 bin 
+thermo 100
+thermo_style custom press pe temp
+thermo_modify lost ignore flush yes
+run 100
+
+reset_timestep 0
+unfix 1
+fix  1 all box/relax aniso 0.0 vmax 0.001 nreset 100
+variable emin equal pe+f_1/atoms
+thermo 1000
+thermo_style custom step press pe v_ecoh f_1 v_emin temp
+compute coord all coord/atom cutoff 3.11564
+dump 1 all custom 1000 dump.${system}_${facet}_${phase}_${num_atoms}.relax id type element x y z c_coord
+dump_modify 1 element ${material1} ${material2}
+minimize 1.0e-9 1.0e-5 1000000 10000000

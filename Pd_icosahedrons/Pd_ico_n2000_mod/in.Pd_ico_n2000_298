@@ -1,0 +1,34 @@
+units metal
+variable latparam equal 1
+variable material string Pd
+variable tmp equal 298
+atom_style atomic
+read_data Pd_ico_n2000.data
+pair_style eam 
+pair_coeff * * Pd_u3.eam 
+compute peratom all pe/atom
+compute pe all reduce sum c_peratom
+compute        virial all stress/atom NULL
+compute        p all reduce sum c_virial[1] c_virial[2] c_virial[3]
+variable natoms equal "count(all)"
+variable ecoh equal "c_pe/v_natoms"
+reset_timestep 0
+timestep 0.001
+velocity 	all create ${tmp} 12345 mom yes rot no
+minimize 1.0e-9 1.0e-5 1000000 10000000
+fix 		1 all nvt temp ${tmp} ${tmp} $(1*dt)
+neighbor 2.0 bin
+thermo 1000
+thermo_style custom step press pe v_ecoh temp 
+thermo_modify lost ignore flush yes
+dump 1 all custom 250 dump.Pd_ico_n2000_${tmp}.nvt id x y z c_peratom c_virial[1] c_virial[2] c_virial[3]
+
+run 10000
+undump 1
+unfix 1
+thermo 1000
+fix  1 all box/relax aniso 0.0 vmax 0.001 nreset 100
+variable emin equal pe+f_1/atoms
+thermo_style custom step press pe v_ecoh f_1 v_emin temp
+dump 1 all custom 250 dump.Pd_ico_n2000_${tmp}.minimize id x y z c_peratom c_virial[1] c_virial[2] c_virial[3]
+minimize 1.0e-9 1.0e-5 1000000 10000000
