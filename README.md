@@ -1,6 +1,7 @@
 # LAMMPS_examples
 
-`LAMMPS` example projects
+`LAMMPS` example projects. For demonstrative and educational usage only.
+Provided by Prof. Bolong HUANG's group.
 
 ## Overview
 
